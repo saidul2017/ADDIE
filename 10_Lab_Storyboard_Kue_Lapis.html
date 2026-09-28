@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>html{-webkit-text-size-adjust:100%}body{margin:0}[hidden]{display:none!important}</style>
 <title>Lab Storyboard Kue Lapis</title>
+<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+<script defer src="/_vercel/insights/script.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Poppins:wght@400;700;800&display=swap">
@@ -398,6 +400,8 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem('lsk:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem('lsk:' + k, JSON.stringify(v)); } catch (e) {} }
 };
+/* Custom event Vercel Web Analytics (paket Pro: maks. 2 properti per event). Jangan kirim data pribadi. */
+const track = (name, data) => { try { window.va('event', data ? { name, data } : { name }); } catch (e) {} };
 
 const LINKS = D.pages.flatMap(p => p.links.map((_, i) => p.code + '#' + i));
 const S = {
@@ -413,6 +417,7 @@ S.visited.add('F1');
 const VIEWS = { coba: 'v-studio', bedah: 'v-studio', peta: 'v-peta', latihan: 'v-latihan', periksa: 'v-periksa' };
 function setMode(m, push) {
   if (!VIEWS[m]) m = 'coba';
+  if (push !== false && m !== S.mode) track('Tab Dibuka', { tab: m });
   S.mode = m;
   document.querySelectorAll('.tab').forEach(t => { const on = t.dataset.mode === m; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
   $('v-studio').setAttribute('aria-labelledby', m === 'bedah' ? 'tab-bedah' : 'tab-coba');
@@ -495,7 +500,11 @@ function jump(target) { if (!P[target] || target === S.cur) return; S.hist.push(
 sWrap.addEventListener('click', e => {
   const el = e.target.closest('[data-go]'); if (!el) return;
   const i = +el.dataset.li, li = P[S.cur].links[i];
-  if (li) { S.tested.add(S.cur + '#' + i); store.set('tested', [...S.tested]); }
+  if (li) {
+    const was = S.tested.size;
+    S.tested.add(S.cur + '#' + i); store.set('tested', [...S.tested]);
+    if (was < LINKS.length && S.tested.size === LINKS.length) track('Misi Uji Tuntas');
+  }
   go(el.dataset.go, li ? li[0] : el.textContent);
 });
 sWrap.addEventListener('keydown', e => {
@@ -649,6 +658,7 @@ function renderQuiz() {
     $('qAgain').onclick = () => { QS.i = 0; QS.totalTries = 0; QS.tries = 0; renderQuiz(); $('qText').focus(); };
     $('qToCheck').onclick = () => setMode('periksa');
     store.set('quizDone', true);
+    track('Latihan Selesai', { coba_lagi: QS.totalTries });
     return;
   }
   const item = Q[QS.i];
@@ -660,6 +670,7 @@ function renderQuiz() {
 $('qOpts').addEventListener('click', e => {
   const b = e.target.closest('.qopt'); if (!b || b.disabled) return;
   const item = Q[QS.i], o = item.o[+b.dataset.j], right = !!o[3];
+  track('Latihan Dijawab', { soal: QS.i + 1, jawaban: 'ABC'[+b.dataset.j] + (right ? ' · tepat' : ' · belum tepat') });
   document.querySelectorAll('.qopt').forEach(x => x.disabled = true);
   b.classList.add(right ? 'right' : 'wrong');
   $('qFb').hidden = false;
@@ -757,7 +768,8 @@ function check(pt, lt) {
   F.sort((a, b) => order[a.s] - order[b.s]);
   return { F, pages, links, known, depth, bad: new Set(F.filter(f => f.s !== 'info').map(f => f.c)), fwd, start };
 }
-let lastReport = '';
+let lastReport = '', lastSummary = null;
+const isSample = () => [SAMPLE_ERR, SAMPLE_KUE].some(s => s.pages === $('inPages').value && s.links === $('inLinks').value);
 function runCheck() {
   const r = check($('inPages').value, $('inLinks').value);
   const nb = r.F.filter(f => f.s === 'bad').length, nw = r.F.filter(f => f.s === 'warn').length;
@@ -771,6 +783,7 @@ function runCheck() {
   $('report').innerHTML = h;
   $('autoMap').innerHTML = r.pages.length ? drawAuto(r) : '';
   lastReport = `Hasil pemeriksaan storyboard: ${nb} masalah, ${nw} peringatan, ${r.pages.length} halaman, ${r.links.length} tautan.\n` + r.F.map(f => `- [${SEV[f.s].toUpperCase()}] ${f.c}: ${f.m}`).join('\n');
+  lastSummary = { masalah: nb, contoh: isSample() };
 }
 function drawAuto(r) {
   const W = 168, Hn = 58, CG = 64, RG = 16, PAD = 24, TOP = 78;
@@ -816,9 +829,10 @@ let draftT;
 function saveDraft() { store.set('draft', { pages: $('inPages').value, links: $('inLinks').value }); }
 ['inPages', 'inLinks'].forEach(id => $(id).addEventListener('input', () => { clearTimeout(draftT); draftT = setTimeout(saveDraft, 400); }));
 document.querySelectorAll('[data-sample]').forEach(b => b.addEventListener('click', () => loadSample(b.dataset.sample)));
-$('btnCheck').addEventListener('click', runCheck);
+$('btnCheck').addEventListener('click', () => { runCheck(); track('Storyboard Diperiksa', lastSummary); });
 $('btnCopy').addEventListener('click', () => {
   if (!lastReport) runCheck();
+  track('Laporan Disalin', lastSummary);
   const done = ok => { $('copyMsg').textContent = ok ? 'Laporan disalin. Tempel di tugas Google Classroom.' : 'Salin manual: pilih teks laporan di atas.'; setTimeout(() => $('copyMsg').textContent = '', 4000); };
   try { navigator.clipboard.writeText(lastReport).then(() => done(true), () => done(false)); } catch (e) { done(false); }
 });
