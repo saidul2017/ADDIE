@@ -239,6 +239,24 @@ textarea{width:100%;box-sizing:border-box;min-height:220px;resize:vertical;font-
 #autoMap svg{min-width:0;width:auto;max-width:none}
 #autoMap:empty{display:none}
 
+/* identitas untuk rekap dosen */
+.idbar{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);display:grid;gap:12px}
+.idform{display:grid;gap:12px}
+.idhead{display:grid;gap:4px;max-width:80ch}
+.idfields{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media (max-width:800px){.idfields{grid-template-columns:1fr}}
+.field input{font:inherit;font-size:15px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 10px;min-width:0}
+.field input:focus-visible{outline:3px solid var(--accent-2);outline-offset:2px}
+.field input[aria-invalid="true"]{border-color:var(--bad)}
+.field .opt{font-weight:500;color:var(--muted)}
+.iderr{font-size:13.5px;color:var(--bad);font-weight:600}
+.idshow{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:14.5px}
+.idshow .ghost{align-self:center}
+.idsync{font-size:13px;color:var(--muted)}
+.idsync.wait{color:var(--warn)}
+p.idnudge{font-size:14px;background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:8px 12px}
+.idnudge .linkbtn{margin-left:4px}
+
 footer{border-top:1px solid var(--line);padding-top:16px;font-size:13px;color:var(--muted);display:grid;gap:6px;max-width:100ch}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
@@ -251,6 +269,31 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:13px;color:va
     <h1>Lab Storyboard Kue Lapis</h1>
     <p class="lede">Storyboard contoh 37 halaman yang sudah bisa diklik. Rasakan medianya sebagai siswa kelas IV, bedah setiap kartu storyboard, lalu periksa storyboard buatanmu sendiri sebelum dibuat di Canva.</p>
   </header>
+
+  <section class="idbar" id="idBar" aria-labelledby="idTitle" hidden>
+    <form id="idForm" class="idform" novalidate>
+      <div class="idhead">
+        <h2 class="ph" id="idTitle">Identitas untuk rekap nilai</h2>
+        <p class="small">Isi sekali di perangkat ini. Nama, NIM, dan kelas beserta hasil latihan, misi uji, dan pemeriksaan storyboard di halaman ini dikirim ke Google Sheet dosen pengampu. Data ini tidak dikirim ke Vercel Analytics.</p>
+      </div>
+      <div class="idfields">
+        <div class="field"><label for="idNama">Nama lengkap</label><input id="idNama" autocomplete="name" maxlength="80" required aria-describedby="idErr"></div>
+        <div class="field"><label for="idNim">NIM</label><input id="idNim" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" required aria-describedby="idErr"></div>
+        <div class="field"><label for="idKelas">Kelas <span class="opt">(opsional)</span></label><input id="idKelas" maxlength="30" placeholder="mis. PGSD 3A"></div>
+      </div>
+      <div class="actions">
+        <button class="primary" type="submit">Simpan identitas</button>
+        <button class="secondary" type="button" id="idCancel" hidden>Batal</button>
+        <span class="iderr" id="idErr" role="alert"></span>
+      </div>
+      <p class="small" id="idResetNote" hidden>Jika NIM diganti, kemajuan yang tersimpan di perangkat ini dikosongkan agar hasil mahasiswa lain tidak ikut tercatat.</p>
+    </form>
+    <div class="idshow" id="idShow" hidden>
+      <span>Hasil tercatat atas nama <b id="idWho"></b></span>
+      <span class="idsync" id="idSync"></span>
+      <button class="ghost" type="button" id="idEdit">Bukan kamu? Ganti</button>
+    </div>
+  </section>
 
   <nav class="tabs" role="tablist" aria-label="Mode belajar">
     <button class="tab" role="tab" id="tab-coba" data-mode="coba" aria-controls="v-studio" aria-selected="true" tabindex="0"><span class="n">1</span><span><b>Coba sebagai siswa</b><small>Klik media seperti anak kelas IV</small></span></button>
@@ -280,6 +323,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:13px;color:va
 
         <aside class="panel" id="panel-coba">
           <h2 class="ph">Misi: uji semua jalur</h2>
+          <p class="idnudge" hidden>Isi nama dan NIM di bagian atas halaman agar hasil ini masuk rekap dosen.<button class="linkbtn" type="button" data-idfocus>Isi sekarang</button></p>
           <p class="small">Sebelum media dipakai di kelas, pengembang mencoba setiap tombol, termasuk semua jawaban yang salah. Klik tombol di layar seperti siswa; lompat lewat daftar halaman atau tombol Sampul tidak dihitung sebagai menguji tombol. Di Canva, tautan juga baru bekerja dalam mode Presentasi.</p>
           <div class="meter">
             <div class="meter-top"><strong id="tstCount">0</strong><span>dari <span id="tstTotal"></span> tombol sudah diuji</span></div>
@@ -335,6 +379,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:13px;color:va
       <div class="viewhead">
         <h2>Latihan: membaca storyboard seperti pengembang</h2>
         <p>Delapan soal tentang storyboard Kue Lapis. Umpan baliknya memakai pola yang sama dengan media: status, alasan, petunjuk, lalu coba lagi.</p>
+        <p class="idnudge" hidden>Isi nama dan NIM di bagian atas halaman agar hasil ini masuk rekap dosen.<button class="linkbtn" type="button" data-idfocus>Isi sekarang</button></p>
       </div>
       <div class="quiz">
         <div class="qprog" id="qProg" aria-hidden="true"></div>
@@ -353,6 +398,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:13px;color:va
       <div class="viewhead">
         <h2>Periksa storyboard-mu</h2>
         <p>Tempel daftar halaman dan daftar tautan dari storyboard-mu (Bagian 3 dan 5 template). Pemeriksa mencari kode salah ketik, halaman buntu, halaman yang tidak bisa dicapai, "Coba lagi" yang salah arah, dan teks layar yang lebih dari 30 kata.</p>
+        <p class="idnudge" hidden>Isi nama dan NIM di bagian atas halaman agar hasil ini masuk rekap dosen.<button class="linkbtn" type="button" data-idfocus>Isi sekarang</button></p>
       </div>
       <div class="samples"><span>Muat:</span>
         <button class="secondary" type="button" data-sample="error">Contoh berisi kesalahan (Siklus Air)</button>
@@ -402,6 +448,9 @@ const store = {
 };
 /* Custom event Vercel Web Analytics (paket Pro: maks. 2 properti per event). Jangan kirim data pribadi. */
 const track = (name, data) => { try { window.va('event', data ? { name, data } : { name }); } catch (e) {} };
+/* Rekap nilai per mahasiswa: URL aplikasi web Google Apps Script (berakhiran /exec). Kosong = formulir identitas
+   disembunyikan dan tidak ada data yang dikirim. Cara membuatnya: apps-script/PANDUAN.md. */
+const SHEET_URL = '';
 
 const LINKS = D.pages.flatMap(p => p.links.map((_, i) => p.code + '#' + i));
 const S = {
@@ -495,17 +544,21 @@ function go(target, label) {
   S.visited.add(target);
   store.set('visited', [...S.visited]); store.set('trail', S.trail);
   renderStage();
+  sendMission();
 }
-function jump(target) { if (!P[target] || target === S.cur) return; S.hist.push(S.cur); S.cur = target; S.visited.add(target); store.set('visited', [...S.visited]); renderStage(); }
+function jump(target) { if (!P[target] || target === S.cur) return; S.hist.push(S.cur); S.cur = target; S.visited.add(target); store.set('visited', [...S.visited]); renderStage(); sendMission(); }
 sWrap.addEventListener('click', e => {
   const el = e.target.closest('[data-go]'); if (!el) return;
   const i = +el.dataset.li, li = P[S.cur].links[i];
+  let tuntas = false;
   if (li) {
     const was = S.tested.size;
     S.tested.add(S.cur + '#' + i); store.set('tested', [...S.tested]);
-    if (was < LINKS.length && S.tested.size === LINKS.length) track('Misi Uji Tuntas');
+    tuntas = was < LINKS.length && S.tested.size === LINKS.length;
+    if (tuntas) track('Misi Uji Tuntas');
   }
   go(el.dataset.go, li ? li[0] : el.textContent);
+  if (tuntas) sendMission(true);
 });
 sWrap.addEventListener('keydown', e => {
   if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -548,11 +601,11 @@ function renderMission() {
   const t = S.trail.slice(-10).reverse();
   $('trail').innerHTML = t.length ? t.map(([a, l, b]) => `<li><span class="mono">${esc(a)}</span><span class="lbl">— ${esc(l || 'klik')} →</span><span class="mono">${esc(b)}</span></li>`).join('') : '<li class="small">Belum ada klik. Mulai dari tombol "Mulai" di sampul.</li>';
 }
-$('btnReset').addEventListener('click', () => {
+function resetMission() {
   S.visited = new Set(['F1']); S.tested = new Set(); S.trail = []; S.hist = []; S.cur = 'F1';
   store.set('visited', ['F1']); store.set('tested', []); store.set('trail', []);
-  renderStage();
-});
+}
+$('btnReset').addEventListener('click', () => { resetMission(); renderStage(); });
 
 /* ---------- spec panel ---------- */
 let chipOpen = null;
@@ -644,21 +697,27 @@ const Q = [
     ['Terakhir, setelah urutan halaman tidak berubah lagi, dengan mengikuti tabel tautan.', 'Tautan dipasang setelah semua halaman lengkap, lalu diuji satu per satu dari F1 dalam mode Presentasi.', null, true],
     ['Tidak perlu; guru cukup berpindah halaman secara manual.', 'Tanpa tautan, cabang umpan balik tidak berjalan dan media tidak interaktif.', 'Apa yang terjadi jika siswa memilih jawaban salah tanpa tautan?']] }
 ];
-const QS = { i: 0, tries: 0, totalTries: 0, done: store.get('quizDone', false) };
+const QS = { i: 0, tries: 0, totalTries: 0, first: [], done: store.get('quizDone', false) };
 function renderQuiz() {
   const prog = Q.map((_, j) => `<span class="${j < QS.i ? 'done' : j === QS.i ? 'now' : ''}"></span>`).join('');
   $('qProg').innerHTML = prog;
   if (QS.i >= Q.length) {
+    const skor = QS.first.filter(a => a && a.endsWith('✓')).length;
     $('qNo').textContent = 'SELESAI';
-    $('qText').textContent = `Kamu menyelesaikan 8 soal dengan ${QS.totalTries} kali mencoba lagi.`;
+    $('qText').textContent = `Kamu menyelesaikan 8 soal dengan ${QS.totalTries} kali mencoba lagi. Tepat pada jawaban pertama: ${skor} dari ${Q.length} soal.`;
     $('qOpts').innerHTML = '';
     $('qFb').hidden = false; $('qFb').className = 'qfb ok';
     $('qFb').innerHTML = '<span class="st">Perhatikan polanya.</span><span>Kamu baru saja mengalami desain yang sama dengan media Kue Lapis: pilihan salah → alasan dan petunjuk → coba lagi → lanjut setelah tepat. Pakai pola ini pada storyboard-mu.</span>';
     $('qNav').innerHTML = '<button class="primary" type="button" id="qAgain">Ulangi latihan</button><button class="secondary" type="button" id="qToCheck">Lanjut ke Periksa storyboard-mu</button>';
-    $('qAgain').onclick = () => { QS.i = 0; QS.totalTries = 0; QS.tries = 0; renderQuiz(); $('qText').focus(); };
+    $('qAgain').onclick = () => { QS.i = 0; QS.totalTries = 0; QS.tries = 0; QS.first = []; renderQuiz(); $('qText').focus(); };
     $('qToCheck').onclick = () => setMode('periksa');
     store.set('quizDone', true);
     track('Latihan Selesai', { coba_lagi: QS.totalTries });
+    report('Latihan Selesai', {
+      skor, dari: Q.length, coba_lagi: QS.totalTries,
+      rincian: Q.map((_, k) => (k + 1) + (QS.first[k] || '-')).join(' '),
+      kunci: Q.map(q => 'ABC'[q.o.findIndex(o => o[3])]).join('')
+    });
     return;
   }
   const item = Q[QS.i];
@@ -669,8 +728,10 @@ function renderQuiz() {
 }
 $('qOpts').addEventListener('click', e => {
   const b = e.target.closest('.qopt'); if (!b || b.disabled) return;
-  const item = Q[QS.i], o = item.o[+b.dataset.j], right = !!o[3];
-  track('Latihan Dijawab', { soal: QS.i + 1, jawaban: 'ABC'[+b.dataset.j] + (right ? ' · tepat' : ' · belum tepat') });
+  const j = +b.dataset.j, item = Q[QS.i], o = item.o[j], right = !!o[3], first = QS.tries === 0;
+  track('Latihan Dijawab', { soal: QS.i + 1, jawaban: 'ABC'[j] + (right ? ' · tepat' : ' · belum tepat') });
+  if (first) QS.first[QS.i] = 'ABC'[j] + (right ? '✓' : '✗');
+  report('Latihan Dijawab', { soal: QS.i + 1, pilihan: 'ABC'[j], tepat: right, pertama: first });
   document.querySelectorAll('.qopt').forEach(x => x.disabled = true);
   b.classList.add(right ? 'right' : 'wrong');
   $('qFb').hidden = false;
@@ -768,7 +829,7 @@ function check(pt, lt) {
   F.sort((a, b) => order[a.s] - order[b.s]);
   return { F, pages, links, known, depth, bad: new Set(F.filter(f => f.s !== 'info').map(f => f.c)), fwd, start };
 }
-let lastReport = '', lastSummary = null;
+let lastReport = '', lastSummary = null, lastStats = null;
 const isSample = () => [SAMPLE_ERR, SAMPLE_KUE].some(s => s.pages === $('inPages').value && s.links === $('inLinks').value);
 function runCheck() {
   const r = check($('inPages').value, $('inLinks').value);
@@ -784,6 +845,7 @@ function runCheck() {
   $('autoMap').innerHTML = r.pages.length ? drawAuto(r) : '';
   lastReport = `Hasil pemeriksaan storyboard: ${nb} masalah, ${nw} peringatan, ${r.pages.length} halaman, ${r.links.length} tautan.\n` + r.F.map(f => `- [${SEV[f.s].toUpperCase()}] ${f.c}: ${f.m}`).join('\n');
   lastSummary = { masalah: nb, contoh: isSample() };
+  lastStats = { masalah: nb, peringatan: nw, halaman: r.pages.length, tautan: r.links.length, contoh: lastSummary.contoh };
 }
 function drawAuto(r) {
   const W = 168, Hn = 58, CG = 64, RG = 16, PAD = 24, TOP = 78;
@@ -829,13 +891,123 @@ let draftT;
 function saveDraft() { store.set('draft', { pages: $('inPages').value, links: $('inLinks').value }); }
 ['inPages', 'inLinks'].forEach(id => $(id).addEventListener('input', () => { clearTimeout(draftT); draftT = setTimeout(saveDraft, 400); }));
 document.querySelectorAll('[data-sample]').forEach(b => b.addEventListener('click', () => loadSample(b.dataset.sample)));
-$('btnCheck').addEventListener('click', () => { runCheck(); track('Storyboard Diperiksa', lastSummary); });
+$('btnCheck').addEventListener('click', () => {
+  runCheck();
+  track('Storyboard Diperiksa', lastSummary);
+  report('Storyboard Diperiksa', { ...lastStats, laporan: lastReport.slice(0, 8000) });
+});
 $('btnCopy').addEventListener('click', () => {
   if (!lastReport) runCheck();
   track('Laporan Disalin', lastSummary);
+  report('Laporan Disalin', { masalah: lastStats.masalah, contoh: lastStats.contoh });
   const done = ok => { $('copyMsg').textContent = ok ? 'Laporan disalin. Tempel di tugas Google Classroom.' : 'Salin manual: pilih teks laporan di atas.'; setTimeout(() => $('copyMsg').textContent = '', 4000); };
   try { navigator.clipboard.writeText(lastReport).then(() => done(true), () => done(false)); } catch (e) { done(false); }
 });
+
+/* ---------- rekap dosen (Google Sheet) ---------- */
+/* Hasil dikirim lewat antrean yang disimpan di perangkat: jika koneksi putus, hasil dikirim ulang nanti.
+   Apps Script tidak mengizinkan CORS, jadi balasannya tidak bisa dibaca (mode no-cors); id unik mencegah catatan ganda. */
+let who = store.get('who', null);
+if (!who || typeof who.nama !== 'string' || typeof who.nim !== 'string') who = null; else who.kelas = String(who.kelas || '');
+let OUT = store.get('outbox', []);
+if (!Array.isArray(OUT)) OUT = [];
+let flushing = false, retryT = 0, missionT = 0, idEditing = false;
+const inflight = new Set();
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+function report(ev, data) {
+  if (!SHEET_URL || !who) return;
+  OUT.push({ id: newId(), ev, nim: who.nim, nama: who.nama, kelas: who.kelas, data: data || {} });
+  OUT = OUT.slice(-300);
+  store.set('outbox', OUT);
+  flush();
+}
+function post(m, keepalive) {
+  inflight.add(m.id);
+  return fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', keepalive, headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(m) })
+    .then(() => { OUT = OUT.filter(x => x.id !== m.id); store.set('outbox', OUT); })
+    .finally(() => inflight.delete(m.id));
+}
+function retryLater() { clearTimeout(retryT); retryT = setTimeout(flush, 30000); }
+async function flush() {
+  if (!SHEET_URL || flushing) return;
+  flushing = true; clearTimeout(retryT);
+  try {
+    for (let m; (m = OUT.find(x => !inflight.has(x.id)));) { renderSync(); await post(m, false); }
+  } catch (e) { retryLater(); }
+  flushing = false; renderSync();
+}
+/* Halaman ditutup atau disembunyikan: kirim sisa antrean sekaligus dengan keepalive. */
+function flushLeaving() {
+  if (missionT) sendMission(true);
+  if (SHEET_URL) OUT.filter(m => !inflight.has(m.id)).slice(0, 10).forEach(m => post(m, true).then(renderSync, retryLater));
+}
+function sendMission(now) {
+  clearTimeout(missionT); missionT = 0;
+  if (!SHEET_URL || !who) return;
+  if (!now) { missionT = setTimeout(sendMission, 20000, true); return; }
+  const m = { diuji: S.tested.size, total: LINKS.length, dikunjungi: S.visited.size, halaman: ORDER.length, tuntas: S.tested.size === LINKS.length };
+  const key = [who.nim, m.diuji, m.dikunjungi].join('|');
+  if (m.diuji + m.dikunjungi <= 1 || store.get('missionSent', '') === key) return;
+  store.set('missionSent', key);
+  report('Misi Uji', m);
+}
+function renderSync() {
+  if (!SHEET_URL || !who) return;
+  const n = OUT.length;
+  $('idSync').textContent = !n ? 'Semua hasil sudah terkirim' : navigator.onLine === false ? `${n} hasil menunggu koneksi internet` : `Mengirim ${n} hasil…`;
+  $('idSync').classList.toggle('wait', n > 0);
+}
+function renderWho() {
+  const on = !!SHEET_URL, form = on && (!who || idEditing);
+  $('idBar').hidden = !on;
+  document.querySelectorAll('.idnudge').forEach(n => { n.hidden = !on || !!who; });
+  $('idForm').hidden = !form;
+  $('idShow').hidden = !on || form;
+  $('idCancel').hidden = !who;
+  $('idResetNote').hidden = !who;
+  if (who) $('idWho').textContent = [who.nama, who.nim, who.kelas].filter(Boolean).join(' · ');
+  renderSync();
+}
+function openIdForm() {
+  if (who && !idEditing) { $('idNama').value = who.nama; $('idNim').value = who.nim; $('idKelas').value = who.kelas; }
+  idEditing = !!who; $('idErr').textContent = '';
+  renderWho();
+  $('idBar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $('idNama').focus({ preventScroll: true });
+}
+/* Komputer bersama: NIM baru mengosongkan kemajuan mahasiswa sebelumnya di perangkat ini. */
+function resetProgress() {
+  resetMission();
+  store.set('quizDone', false);
+  QS.i = 0; QS.tries = 0; QS.totalTries = 0; QS.first = [];
+  renderQuiz();
+  loadSample('error');
+  setMode(S.mode, false);
+}
+$('idForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const nama = $('idNama').value.replace(/\s+/g, ' ').trim();
+  const nim = $('idNim').value.replace(/\s+/g, '').toUpperCase();
+  const kelas = $('idKelas').value.replace(/\s+/g, ' ').trim();
+  const bad = nama.length < 3 ? ['idNama', 'Tulis nama lengkapmu.'] : !/^[A-Z0-9./-]{4,20}$/.test(nim) ? ['idNim', 'NIM berisi 4–20 huruf atau angka, tanpa spasi.'] : null;
+  ['idNama', 'idNim'].forEach(id => $(id).setAttribute('aria-invalid', String(!!bad && bad[0] === id)));
+  if (bad) { $('idErr').textContent = bad[1]; $(bad[0]).focus(); return; }
+  const changed = !!who && who.nim !== nim;
+  who = { nama, nim, kelas }; store.set('who', who);
+  idEditing = false; $('idErr').textContent = '';
+  if (changed) resetProgress();
+  renderWho();
+  report('Lab Dibuka', {});
+  sendMission(true);
+  $('idEdit').focus();
+});
+$('idEdit').addEventListener('click', openIdForm);
+$('idCancel').addEventListener('click', () => { idEditing = false; renderWho(); $('idEdit').focus(); });
+document.querySelectorAll('[data-idfocus]').forEach(b => b.addEventListener('click', openIdForm));
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushLeaving(); });
+window.addEventListener('pagehide', flushLeaving);
+window.addEventListener('online', flush);
+window.addEventListener('offline', renderSync);
 
 /* ---------- boot ---------- */
 (function boot() {
@@ -844,6 +1016,9 @@ $('btnCopy').addEventListener('click', () => {
   renderQuiz();
   let m = 'coba'; try { const h = (location.hash || '').slice(1); if (VIEWS[h]) m = h; } catch (e) {}
   setMode(m, false);
+  renderWho();
+  if (who) report('Lab Dibuka', {});
+  flush();
 })();
 </script>
 
