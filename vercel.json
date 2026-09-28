@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "redirects": [
+    { "source": "/", "destination": "/10_Lab_Storyboard_Kue_Lapis", "permanent": false }
+  ]
+}
